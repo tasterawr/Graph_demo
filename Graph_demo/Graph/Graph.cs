@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Windows.Forms;
 
 namespace Graph_demo
 {
@@ -103,7 +104,11 @@ namespace Graph_demo
         {
             this.vertices = new List<Vertex>(previous.vertices);
             this.edges = new List<Edge>(previous.edges);
-            this.adj_list = new Dictionary<Vertex, List<Vertex>>(previous.adj_list);
+            this.adj_list = new Dictionary<Vertex, List<Vertex>>();
+            foreach (Vertex v in previous.vertices)
+            {
+                this.adj_list.Add(v, new List<Vertex>(previous.adj_list[v]));
+            }
             this.oriented = previous.oriented;
             this.weighted = previous.weighted;
         }
