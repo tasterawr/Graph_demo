@@ -651,6 +651,80 @@ namespace Graph_demo
 
         }
 
+        public KeyValuePair<List<Vertex>,int> FordBellman(Vertex from, Vertex to)
+        {
+            Dictionary<Vertex, int> d = new Dictionary<Vertex, int>();
+            Dictionary<Vertex, Vertex> p = new Dictionary<Vertex, Vertex>();
+            foreach (Vertex v in vertices)
+            {
+                d.Add(v, int.MaxValue);
+                p.Add(v, null);
+            }
+
+            d[from] = 0;
+
+            for (; ; )
+            {
+                bool flag = false;
+                foreach (Edge e in edges)
+                {
+                    if (d[e.Begin] < int.MaxValue)
+                    {
+                        if (!Orient)
+                            if (d[e.End] > d[e.Begin] + e.Weight)
+                            {
+                                d[e.End] = d[e.Begin] + e.Weight;
+                                p[e.End] = e.Begin;
+                                flag = true;
+                            }
+                        else
+                            {
+                                if (d[e.End] > d[e.Begin] + e.Weight)
+                                {
+                                    d[e.End] = d[e.Begin] + e.Weight;
+                                    p[e.End] = e.Begin;
+                                    flag = true;
+                                }
+                                else if (d[e.Begin] > d[e.End] + e.Weight)
+                                {
+                                    d[e.Begin] = d[e.End] + e.Weight;
+                                    p[e.Begin] = e.End;
+                                    flag = true;
+                                }
+                            }
+                    }
+                }
+                if (!flag)
+                    break;
+            }
+
+            List<Vertex> path = new List<Vertex>();
+
+            if (d[to] == int.MaxValue)
+                return new KeyValuePair<List<Vertex>, int>(null, -1);
+            else
+            {
+                Vertex back = to;
+                while(back != null)
+                {
+                    path.Add(back);
+                    back = p[back];
+                }
+
+                path.Reverse();
+                return new KeyValuePair<List<Vertex>, int>(path, d[to]);
+            }
+        }
+
+        public KeyValuePair<List<Vertex>,int> FindPathLessThan(Vertex a, Vertex b, int l)
+        {
+            KeyValuePair<List<Vertex>, int> path = FordBellman(a, b);
+            if (path.Value <= l)
+                return path;
+            else
+                return new KeyValuePair<List<Vertex>, int>(null, -1);
+        }
+
         public List<Vertex> Vertices
         {
             get => vertices;

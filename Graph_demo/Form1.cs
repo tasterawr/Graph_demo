@@ -399,7 +399,7 @@ namespace Graph_demo
         {
             if (control.Graph_.Orient)
             {
-                ErrorMessanger.Message = "Граф не должен быть ориентированный.";
+                ErrorMessanger.Message = "Граф не должен быть ориентированным.";
                 ThrowMessage();
             }
             Graph g = control.Graph_.Kruskal();
@@ -414,9 +414,69 @@ namespace Graph_demo
 
         public void GetRadius()
         {
+            if (NegWeightsCheck() == 1)
+            {
+                ErrorMessanger.Message = "Граф имеет отрицательные ребра (дуги).";
+                ThrowMessage();
+                return;
+            }
+
             MessageBox.Show("Радиус графа = " + control.Graph_.GetRadius());
         }
 
+        public int NegWeightsCheck()
+        {
+            if (!control.Graph_.Weighted)
+            {
+                ErrorMessanger.Message = "Ребра (дуги) графа не имеют весов";
+                ThrowMessage();
+                return -1;
+
+            }
+
+            List<Edge> l = new List<Edge>();
+            foreach(Edge e in control.Graph_.Edges)
+            {
+                if (e.Weight < 0)
+                    l.Add(e);
+            }
+
+            if (l.Count == 0)
+                return 0;
+            else return 1;
+        }
+
+        public void FindPathLessThan(string v1, string v2, int l)
+        {
+            Vertex a;
+            Vertex b;
+            try
+            {
+                a = control.Graph_.Vertices.Single(x => x.Value == v1);
+                b = control.Graph_.Vertices.Single(x => x.Value == v2);
+            }
+            catch
+            {
+                ErrorMessanger.Message = "Граф не содержит вершин с указанными значениями.";
+                ThrowMessage();
+                return;
+            }
+
+            KeyValuePair<List<Vertex>,int> pair = control.Graph_.FindPathLessThan(a, b, l);
+
+            if (pair.Key == null)
+                MessageBox.Show("Не существует пути.");
+            else
+            {
+                StringBuilder s = new StringBuilder();
+                foreach (Vertex v in pair.Key)
+                {
+                    s.Append(v.Value + "-");
+                }
+                s.Length--;
+                MessageBox.Show("Путь: " + s.ToString() + ", длина = " + pair.Value);
+            }
+        }
         public void ThrowMessage()
         {
             if (ErrorMessanger.Message != "")

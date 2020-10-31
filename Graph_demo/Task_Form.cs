@@ -25,6 +25,7 @@ namespace Graph_demo
             task_cb.Items.Add("Задание 32, п. II");
             task_cb.Items.Add("Задание Крускал");
             task_cb.Items.Add("Задание Дийкстра");
+            task_cb.Items.Add("Задание Форд-Беллман I");
             task_cb.Text = "Задание 1 (la 1)";
         }
 
@@ -106,6 +107,19 @@ namespace Graph_demo
                     return;
                 }
                 parent.GetRadius();
+                this.Close();
+                return;
+            }
+
+            else if (task_cb.SelectedItem.ToString() == "Задание Форд-Беллман I")
+            {
+                if (!parent.control.Graph_.Weighted)
+                {
+                    MessageBox.Show("Граф не взвешенный.");
+                    return;
+                }
+                Task6 form = new Task6(parent);
+                form.Show();
                 this.Close();
                 return;
             }
