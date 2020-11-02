@@ -102,6 +102,12 @@
     <Compile Include="Task6.Designer.cs">
       <DependentUpon>Task6.cs</DependentUpon>
     </Compile>
+    <Compile Include="Task7.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Task7.Designer.cs">
+      <DependentUpon>Task7.cs</DependentUpon>
+    </Compile>
     <Compile Include="Task_Form.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -146,6 +152,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Task6.resx">
       <DependentUpon>Task6.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Task7.resx">
+      <DependentUpon>Task7.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Task_Form.resx">
       <DependentUpon>Task_Form.cs</DependentUpon>

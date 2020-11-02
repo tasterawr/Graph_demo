@@ -50,3 +50,4 @@ C:\Users\LOKTEVS\source\repos\Graph_demo\Graph_demo\obj\Debug\Graph_demo.csproj.
 C:\Users\LOKTEVS\source\repos\Graph_demo\Graph_demo\obj\Debug\Graph_demo.exe
 C:\Users\LOKTEVS\source\repos\Graph_demo\Graph_demo\obj\Debug\Graph_demo.pdb
 C:\Users\LOKTEVS\source\repos\Graph_demo\Graph_demo\obj\Debug\Graph_demo.Task6.resources
+C:\Users\LOKTEVS\source\repos\Graph_demo\Graph_demo\obj\Debug\Graph_demo.Task7.resources

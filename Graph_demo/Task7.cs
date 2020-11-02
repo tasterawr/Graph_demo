@@ -10,33 +10,25 @@ using System.Windows.Forms;
 
 namespace Graph_demo
 {
-    public partial class Task6 : Form
+    public partial class Task7 : Form
     {
         public Form1 parent;
-        public Task6(Form1 parent)
+        public Task7(Form1 parent)
         {
             this.parent = parent;
             InitializeComponent();
         }
 
-        private void execute_b_Click(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
-            if (from_tb.Text == "" || to_tb.Text == "" || len_tb.Text == "")
+            if (v1_tb.Text == "" || v2_tb.Text == "" || v3_tb.Text == "")
             {
                 ErrorMessanger.Message = "Не заполнены поля.";
                 parent.ThrowMessage();
                 return;
             }
-            if (from_tb.Text == to_tb.Text)
-            {
-                ErrorMessanger.Message = "Нельзя выполнить для петли.";
-                parent.ThrowMessage();
-                return;
-            }
             else
-            {
-                parent.FindPathLessThan(from_tb.Text, to_tb.Text, int.Parse(len_tb.Text));
-            }
+                parent.Floyd(v1_tb.Text, v2_tb.Text, v3_tb.Text);
         }
     }
 }

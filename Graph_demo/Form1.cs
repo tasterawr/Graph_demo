@@ -477,6 +477,53 @@ namespace Graph_demo
                 MessageBox.Show("Путь: " + s.ToString() + ", длина = " + pair.Value);
             }
         }
+
+        public void Floyd(string v1, string v2, string to)
+        {
+            Vertex a;
+            Vertex b;
+            Vertex c;
+            try
+            {
+                a = control.Graph_.Vertices.Single(x => x.Value == v1);
+                b = control.Graph_.Vertices.Single(x => x.Value == v2);
+                c = control.Graph_.Vertices.Single(x => x.Value == to);
+            }
+            catch
+            {
+                ErrorMessanger.Message = "Граф не содержит вершин с указанными значениями.";
+                ThrowMessage();
+                return;
+            }
+
+            List<KeyValuePair<List<Vertex>, int>> pair = control.Graph_.FloydWarshall(a, b, c);
+            StringBuilder s = new StringBuilder();
+            s.Append("Из " + v1 + " в " + to + ": ");
+            if (pair[0].Key != null)
+            {
+                foreach (Vertex v in pair[0].Key)
+                    s.Append(v.Value + "-");
+                s.Length--;
+                s.Append(", длина = " + pair[0].Value);
+                s.Append("\n");
+            }
+            else
+                s.Append("Не существует.\n");
+            s.Append("Из " + v2 + " в " + to + ": ");
+            if (pair[1].Key != null)
+            {
+                foreach (Vertex v in pair[1].Key)
+                    s.Append(v.Value + "-");
+                s.Length--;
+                s.Append(", длина = " + pair[1].Value);
+                s.Append("\n");
+            }
+            else
+                s.Append("Не существует.");
+
+            MessageBox.Show(s.ToString());
+
+        }
         public void ThrowMessage()
         {
             if (ErrorMessanger.Message != "")

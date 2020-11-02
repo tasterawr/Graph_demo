@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Windows.Forms;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Graph_demo
 {
@@ -723,6 +724,91 @@ namespace Graph_demo
                 return path;
             else
                 return new KeyValuePair<List<Vertex>, int>(null, -1);
+        }
+
+        public List<KeyValuePair<List<Vertex>, int>> FloydWarshall(Vertex v1, Vertex v2, Vertex to)
+        {
+            Dictionary<Vertex, Dictionary<Vertex, int>> d = new Dictionary<Vertex, Dictionary<Vertex, int>>();
+            Dictionary<Vertex, Dictionary<Vertex, Vertex>> p = new Dictionary<Vertex, Dictionary<Vertex, Vertex>>();
+            foreach (Vertex v in vertices)
+            {
+                Dictionary<Vertex, int> pair = new Dictionary<Vertex, int>();
+                Dictionary<Vertex, Vertex> p_pair = new Dictionary<Vertex, Vertex>();
+                foreach (Vertex v_ in vertices)
+                {
+                    Edge e;
+                    try
+                    {
+                        if (Orient)
+                            e = edges.Single(x => x.Begin == v && x.End == v_);
+                        else
+                            e = edges.Single(x => (x.Begin == v && x.End == v_) || (x.Begin == v_ && x.End == v));
+                        pair.Add(v_, e.Weight);
+                    }
+                    catch
+                    {
+                        pair.Add(v_, 100000);
+                    }
+                    p_pair.Add(v_, v_);
+                }
+                d.Add(v, pair);
+                p.Add(v, p_pair);
+                d[v][v] = 0;
+            }
+
+
+            foreach (Vertex a in vertices)
+            {
+                foreach (Vertex b in vertices)
+                {
+                    if (d[a][b] != 100000)
+                    foreach (Vertex c in vertices)
+                    {
+                        if (d[a][c] > d[a][b] + d[b][c])
+                        {
+                            d[a][c] = d[a][b] + d[b][c];
+                            p[a][c] = p[a][b];
+                        }
+                    }
+                }
+            }
+
+            List<Vertex> path1 = new List<Vertex>();
+            List<Vertex> path2 = new List<Vertex>();
+            List<KeyValuePair<List<Vertex>, int>> ans = new List<KeyValuePair<List<Vertex>, int>>();
+            if (d[v1][to] == 100000)
+            {
+                path1 = null;
+            }
+            else
+            {
+                Vertex ver = v1;
+                while (ver != to)
+                {
+                    path1.Add(ver);
+                    ver = p[ver][to];
+                }
+                path1.Add(to);
+            }
+            if (d[v2][to] == int.MaxValue)
+            {
+                path2 = null;
+            }
+            else
+            {
+                Vertex ver = v2;
+                while (ver != to)
+                {
+                    path2.Add(ver);
+                    ver = p[ver][to];
+                }
+                path2.Add(to);
+            }
+
+            ans.Add(new KeyValuePair<List<Vertex>, int>(path1, d[v1][to]));
+            ans.Add(new KeyValuePair<List<Vertex>, int>(path2, d[v2][to]));
+
+            return ans;
         }
 
         public List<Vertex> Vertices
