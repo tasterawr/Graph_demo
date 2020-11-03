@@ -421,7 +421,9 @@ namespace Graph_demo
                 return;
             }
 
-            MessageBox.Show("Радиус графа = " + control.Graph_.GetRadius());
+            int r = control.Graph_.GetRadius();
+            ThrowMessage();
+            MessageBox.Show("Радиус графа = " + r);
         }
 
         public int NegWeightsCheck()

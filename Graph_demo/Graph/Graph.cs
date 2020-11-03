@@ -126,6 +126,7 @@ namespace Graph_demo
                 v = new Vertex(val);
                 vertices.Add(v);
                 adj_list.Add(v, new List<Vertex>());
+                adj_list[v] = new List<Vertex>();
                 return v;
             }
             if (v == null)
@@ -354,7 +355,7 @@ namespace Graph_demo
             List<Vertex> included = new List<Vertex>();
             foreach (Vertex v in vertices)
             {
-                List<Edge> tmp = edges.Where(x => x.Begin == v).ToList();
+                List<Edge> tmp = edges.Where(x => (x.Begin == v) || (x.End == v)).ToList();
 
                 if (tmp.Count != 0)
                     foreach (Edge e in tmp)
@@ -635,6 +636,11 @@ namespace Graph_demo
 
         public int GetRadius()
         {
+            if (GetIsolated().Count != 0)
+            {
+                ErrorMessanger.Message = "В графе более одной компоненты связности!";
+                return 0;
+            }
             List<int> ecc_s = new List<int>();
             int radius = int.MaxValue;
             foreach (Vertex v in vertices)
