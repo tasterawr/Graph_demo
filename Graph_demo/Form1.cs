@@ -414,14 +414,17 @@ namespace Graph_demo
 
         public void GetRadius()
         {
-            if (NegWeightsCheck() == 1)
-            {
-                ErrorMessanger.Message = "Граф имеет отрицательные ребра (дуги).";
-                ThrowMessage();
-                return;
-            }
+            //if (NegWeightsCheck() == 1)
+            //{
+            //    ErrorMessanger.Message = "Граф имеет отрицательные ребра (дуги).";
+            //    ThrowMessage();
+            //    return;
+            //}
 
-            MessageBox.Show("Радиус графа = " + control.Graph_.GetRadius());
+            int r = control.Graph_.GetRadius();
+            ThrowMessage();
+            if (r != -1)
+                MessageBox.Show("Радиус графа = " + r);
         }
 
         public int NegWeightsCheck()
@@ -448,6 +451,15 @@ namespace Graph_demo
 
         public void FindPathLessThan(string v1, string v2, int l)
         {
+            foreach (Edge e in control.Graph_.Edges)
+            {
+                if (e.Weight < 0)
+                {
+                    ErrorMessanger.Message = "Граф содержит отрицательные веса ребер(дуг).";
+                    ThrowMessage();
+                    return;
+                }
+            }
             Vertex a;
             Vertex b;
             try
@@ -497,6 +509,13 @@ namespace Graph_demo
             }
 
             List<KeyValuePair<List<Vertex>, int>> pair = control.Graph_.FloydWarshall(a, b, c);
+            if (pair.Count == 1 && pair[0].Value == -100000)
+            {
+                StringBuilder st = new StringBuilder();
+                st.Append("Найден отрицательный цикл в вершине " + pair[0].Key[0].Value);
+                MessageBox.Show(st.ToString());
+                return;
+            }
             StringBuilder s = new StringBuilder();
             s.Append("Из " + v1 + " в " + to + ": ");
             if (pair[0].Key != null)

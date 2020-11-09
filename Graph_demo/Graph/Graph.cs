@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Windows.Forms;
 using System.Security.Cryptography.X509Certificates;
+using System.Windows.Forms.VisualStyles;
 
 namespace Graph_demo
 {
@@ -48,10 +49,10 @@ namespace Graph_demo
                     return;
                 }
                 int i = 0;
-                char div = '-';
+                char div = '−';
                 try
                 {
-                    while (!input[i].Contains("-") && !input[i].Contains(">"))
+                    while (!input[i].Contains("−") && !input[i].Contains(">"))
                     {
                         AddVertex(input[i]);
                         i++;
@@ -126,6 +127,7 @@ namespace Graph_demo
                 v = new Vertex(val);
                 vertices.Add(v);
                 adj_list.Add(v, new List<Vertex>());
+                adj_list[v] = new List<Vertex>();
                 return v;
             }
             if (v == null)
@@ -325,7 +327,7 @@ namespace Graph_demo
             }
             else
             {
-                div = "-";
+                div = "−";
             }
             using (StreamWriter sw = new StreamWriter(filename))
             {
@@ -354,7 +356,7 @@ namespace Graph_demo
             List<Vertex> included = new List<Vertex>();
             foreach (Vertex v in vertices)
             {
-                List<Edge> tmp = edges.Where(x => x.Begin == v).ToList();
+                List<Edge> tmp = edges.Where(x => (x.Begin == v) || (x.End == v)).ToList();
 
                 if (tmp.Count != 0)
                     foreach (Edge e in tmp)
@@ -604,6 +606,8 @@ namespace Graph_demo
                     }
                 }
 
+                if (v.Value == "")
+                    break;
                 visited[v] = true;
                 n--;
 
@@ -626,7 +630,7 @@ namespace Graph_demo
             int eccentr = -1;
             foreach (KeyValuePair<Vertex, int> pair in d)
             {
-                if (pair.Value > eccentr)
+                if (Math.Abs(pair.Value) > eccentr)
                     eccentr = pair.Value;
             }
 
@@ -635,6 +639,31 @@ namespace Graph_demo
 
         public int GetRadius()
         {
+            List<List<Vertex>> con_comp = new List<List<Vertex>>();
+            foreach (Vertex v in vertices)
+            {
+                List<Vertex> l = new List<Vertex>();
+                l.Add(v);
+                con_comp.Add(l);
+            }
+
+            foreach (Edge e in edges)
+            {
+                List<Vertex> comp1 = con_comp.Single(x => x.IndexOf(e.Begin) != -1);
+                List<Vertex> comp2 = con_comp.Single(x => x.IndexOf(e.End) != -1);
+                if (comp1 != comp2)
+                {
+                    List<Vertex> comp = comp1.Concat(comp2).ToList();
+                    con_comp.Add(comp);
+                    con_comp.Remove(comp1);
+                    con_comp.Remove(comp2);
+                }
+            }
+            if (con_comp.Count > 1)
+            {
+                ErrorMessanger.Message = "Граф не является связным.";
+                return -1;
+            }
             List<int> ecc_s = new List<int>();
             int radius = int.MaxValue;
             foreach (Vertex v in vertices)
@@ -649,7 +678,6 @@ namespace Graph_demo
             }
 
             return radius;
-
         }
 
         public KeyValuePair<List<Vertex>,int> FordBellman(Vertex from, Vertex to)
@@ -671,13 +699,15 @@ namespace Graph_demo
                 {
                     if (d[e.Begin] < int.MaxValue)
                     {
-                        if (!Orient)
+                        if (Orient)
+                        {
                             if (d[e.End] > d[e.Begin] + e.Weight)
                             {
                                 d[e.End] = d[e.Begin] + e.Weight;
                                 p[e.End] = e.Begin;
                                 flag = true;
                             }
+                        }  
                         else
                             {
                                 if (d[e.End] > d[e.Begin] + e.Weight)
@@ -756,21 +786,44 @@ namespace Graph_demo
                 d[v][v] = 0;
             }
 
+            bool neg_cycle_flag = false;
+            Vertex neg_c_begin = new Vertex();
 
             foreach (Vertex a in vertices)
             {
                 foreach (Vertex b in vertices)
                 {
                     if (d[a][b] != 100000)
-                    foreach (Vertex c in vertices)
-                    {
-                        if (d[a][c] > d[a][b] + d[b][c])
+                        foreach (Vertex c in vertices)
                         {
-                            d[a][c] = d[a][b] + d[b][c];
-                            p[a][c] = p[a][b];
+                            if (d[a][c] > d[a][b] + d[b][c])
+                            {
+                                d[a][c] = d[a][b] + d[b][c];
+                                p[a][c] = p[a][b];
+                            }
+                            if (d[a][c] < 100000 && d[c][c] < 0 && d[c][b] < 100000)
+                            {
+                                d[a][b] = -100000;
+                                neg_cycle_flag = true;
+                                neg_c_begin = c;
+                                break;
+                            }
                         }
-                    }
+                    if (neg_cycle_flag)
+                        break;
                 }
+                if (neg_cycle_flag)
+                    break;
+            }
+
+            if (neg_cycle_flag)
+            {
+                List<KeyValuePair<List<Vertex>, int>> answ = new List<KeyValuePair<List<Vertex>, int>>();
+                List<Vertex> l = new List<Vertex>();
+                l.Add(neg_c_begin);
+                int inf = -100000;
+                answ.Add(new KeyValuePair<List<Vertex>, int>(l, inf));
+                return answ;
             }
 
             List<Vertex> path1 = new List<Vertex>();
