@@ -451,15 +451,6 @@ namespace Graph_demo
 
         public void FindPathLessThan(string v1, string v2, int l)
         {
-            foreach (Edge e in control.Graph_.Edges)
-            {
-                if (e.Weight < 0)
-                {
-                    ErrorMessanger.Message = "Граф содержит отрицательные веса ребер(дуг).";
-                    ThrowMessage();
-                    return;
-                }
-            }
             Vertex a;
             Vertex b;
             try
@@ -476,6 +467,11 @@ namespace Graph_demo
 
             KeyValuePair<List<Vertex>,int> pair = control.Graph_.FindPathLessThan(a, b, l);
 
+            if (pair.Value == -10000)
+            {
+                MessageBox.Show("Содержится отрицательный цикл.");
+                return;
+            }
             if (pair.Key == null)
                 MessageBox.Show("Не существует пути.");
             else
@@ -509,33 +505,40 @@ namespace Graph_demo
             }
 
             List<KeyValuePair<List<Vertex>, int>> pair = control.Graph_.FloydWarshall(a, b, c);
-            if (pair.Count == 1 && pair[0].Value == -100000)
-            {
-                StringBuilder st = new StringBuilder();
-                st.Append("Найден отрицательный цикл в вершине " + pair[0].Key[0].Value);
-                MessageBox.Show(st.ToString());
-                return;
-            }
             StringBuilder s = new StringBuilder();
             s.Append("Из " + v1 + " в " + to + ": ");
             if (pair[0].Key != null)
             {
-                foreach (Vertex v in pair[0].Key)
-                    s.Append(v.Value + "-");
-                s.Length--;
-                s.Append(", длина = " + pair[0].Value);
-                s.Append("\n");
+                if (pair[0].Value == -100000)
+                {
+                    s.Append("Найден отрицательный цикл на пути из " + pair[0].Key[0].Value + " в " + pair[0].Key[1].Value + "\n");
+                }
+                else
+                {
+                    foreach (Vertex v in pair[0].Key)
+                        s.Append(v.Value + "-");
+                    s.Length--;
+                    s.Append(", длина = " + pair[0].Value);
+                    s.Append("\n");
+                }
             }
             else
                 s.Append("Не существует.\n");
             s.Append("Из " + v2 + " в " + to + ": ");
-            if (pair[1].Key != null)
+            if (pair.Count > 1)
             {
-                foreach (Vertex v in pair[1].Key)
-                    s.Append(v.Value + "-");
-                s.Length--;
-                s.Append(", длина = " + pair[1].Value);
-                s.Append("\n");
+                if (pair[1].Value == -100000)
+                {
+                    s.Append("Найден отрицательный цикл на пути из " + pair[1].Key[0].Value + " в " + pair[1].Key[1].Value + "\n");
+                }
+                else
+                {
+                    foreach (Vertex v in pair[1].Key)
+                        s.Append(v.Value + "-");
+                    s.Length--;
+                    s.Append(", длина = " + pair[1].Value);
+                    s.Append("\n");
+                }
             }
             else
                 s.Append("Не существует.");

@@ -686,15 +686,15 @@ namespace Graph_demo
             Dictionary<Vertex, Vertex> p = new Dictionary<Vertex, Vertex>();
             foreach (Vertex v in vertices)
             {
-                d.Add(v, int.MaxValue);
+                d.Add(v, 10000);
                 p.Add(v, null);
             }
 
             d[from] = 0;
+            bool neg_cycle_flag = false;
 
-            for (; ; )
+            for (int i=0; i< vertices.Count;++i)
             {
-                bool flag = false;
                 foreach (Edge e in edges)
                 {
                     if (d[e.Begin] < int.MaxValue)
@@ -703,43 +703,53 @@ namespace Graph_demo
                         {
                             if (d[e.End] > d[e.Begin] + e.Weight)
                             {
-                                d[e.End] = d[e.Begin] + e.Weight;
+                                d[e.End] = -10000 > d[e.Begin] + e.Weight ? -10000 : d[e.Begin] + e.Weight;
                                 p[e.End] = e.Begin;
-                                flag = true;
                             }
-                        }  
+                            if (d[e.End] == -10000)
+                                neg_cycle_flag = true;
+                        }
                         else
+                        {
+                            if (d[e.End] > d[e.Begin] + e.Weight)
                             {
-                                if (d[e.End] > d[e.Begin] + e.Weight)
-                                {
-                                    d[e.End] = d[e.Begin] + e.Weight;
-                                    p[e.End] = e.Begin;
-                                    flag = true;
-                                }
-                                else if (d[e.Begin] > d[e.End] + e.Weight)
-                                {
-                                    d[e.Begin] = d[e.End] + e.Weight;
-                                    p[e.Begin] = e.End;
-                                    flag = true;
-                                }
+                                d[e.End] = -10000 > d[e.Begin] + e.Weight ? -10000 : d[e.Begin] + e.Weight;
+                                p[e.End] = e.Begin;
                             }
+                            else if (d[e.Begin] > d[e.End] + e.Weight)
+                            {
+                                d[e.Begin] = -10000 > d[e.End] + e.Weight ? -10000 : d[e.End] + e.Weight;
+                                p[e.Begin] = e.End;
+                            }
+                            if (d[e.End] == -10000 || d[e.Begin] == -10000)
+                                neg_cycle_flag = true;
+                        }
                     }
                 }
-                if (!flag)
-                    break;
             }
 
             List<Vertex> path = new List<Vertex>();
-
             if (d[to] == int.MaxValue)
                 return new KeyValuePair<List<Vertex>, int>(null, -1);
             else
             {
-                Vertex back = to;
-                while(back != null)
+                Vertex cur = to;
+                int w = 0;
+                while(cur != null)
                 {
-                    path.Add(back);
-                    back = p[back];
+                    path.Add(cur);
+                    cur = p[cur];
+                    try
+                    {
+                        Edge e = edges.Single(x => x.Begin == p[cur] && x.End == cur);
+                        w += e.Weight;
+                        if (w < -10000)
+                            return new KeyValuePair<List<Vertex>, int>(null, -10000);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
                 }
 
                 path.Reverse();
@@ -750,6 +760,8 @@ namespace Graph_demo
         public KeyValuePair<List<Vertex>,int> FindPathLessThan(Vertex a, Vertex b, int l)
         {
             KeyValuePair<List<Vertex>, int> path = FordBellman(a, b);
+            if (path.Value == -10000)
+                return new KeyValuePair<List<Vertex>, int>(null, -10000);
             if (path.Value <= l)
                 return path;
             else
@@ -787,7 +799,6 @@ namespace Graph_demo
             }
 
             bool neg_cycle_flag = false;
-            Vertex neg_c_begin = new Vertex();
 
             foreach (Vertex a in vertices)
             {
@@ -804,32 +815,38 @@ namespace Graph_demo
                             if (d[a][c] < 100000 && d[c][c] < 0 && d[c][b] < 100000)
                             {
                                 d[a][b] = -100000;
-                                neg_cycle_flag = true;
-                                neg_c_begin = c;
-                                break;
                             }
                         }
-                    if (neg_cycle_flag)
-                        break;
                 }
-                if (neg_cycle_flag)
-                    break;
             }
 
-            if (neg_cycle_flag)
+            foreach (Vertex a in vertices)
             {
-                List<KeyValuePair<List<Vertex>, int>> answ = new List<KeyValuePair<List<Vertex>, int>>();
-                List<Vertex> l = new List<Vertex>();
-                l.Add(neg_c_begin);
-                int inf = -100000;
-                answ.Add(new KeyValuePair<List<Vertex>, int>(l, inf));
-                return answ;
+                foreach (Vertex b in vertices)
+                {
+                    if (d[a][b] != 100000)
+                        foreach (Vertex c in vertices)
+                        {
+                            if (d[a][c] < 100000 && d[c][c] < 0 && d[c][b] < 100000)
+                            {
+                                d[a][b] = -100000;
+                            }
+                        }
+                }
             }
 
             List<Vertex> path1 = new List<Vertex>();
             List<Vertex> path2 = new List<Vertex>();
             List<KeyValuePair<List<Vertex>, int>> ans = new List<KeyValuePair<List<Vertex>, int>>();
-            if (d[v1][to] == 100000)
+
+            if (d[v1][to] == -100000)
+            {
+                List<Vertex> l = new List<Vertex>();
+                l.Add(v1);
+                l.Add(to);
+                ans.Add(new KeyValuePair<List<Vertex>, int>(l, -100000));
+            }
+            else if (d[v1][to] == 100000)
             {
                 path1 = null;
             }
@@ -842,8 +859,17 @@ namespace Graph_demo
                     ver = p[ver][to];
                 }
                 path1.Add(to);
+                ans.Add(new KeyValuePair<List<Vertex>, int>(path1, d[v1][to]));
             }
-            if (d[v2][to] == int.MaxValue)
+
+            if (d[v2][to] == -100000)
+            {
+                List<Vertex> l = new List<Vertex>();
+                l.Add(v2);
+                l.Add(to);
+                ans.Add(new KeyValuePair<List<Vertex>, int>(l, -100000));
+            }
+            else if (d[v2][to] == 100000)
             {
                 path2 = null;
             }
@@ -856,10 +882,8 @@ namespace Graph_demo
                     ver = p[ver][to];
                 }
                 path2.Add(to);
+                ans.Add(new KeyValuePair<List<Vertex>, int>(path2, d[v2][to]));
             }
-
-            ans.Add(new KeyValuePair<List<Vertex>, int>(path1, d[v1][to]));
-            ans.Add(new KeyValuePair<List<Vertex>, int>(path2, d[v2][to]));
 
             return ans;
         }
