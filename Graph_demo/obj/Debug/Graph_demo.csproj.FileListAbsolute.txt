@@ -55,3 +55,4 @@ C:\Users\loktevik\source\repos\Graph_demo\Graph_demo\obj\Debug\Graph_demo.Task4.
 C:\Users\loktevik\source\repos\Graph_demo\Graph_demo\obj\Debug\Graph_demo.Task5.resources
 C:\Users\loktevik\source\repos\Graph_demo\Graph_demo\obj\Debug\Graph_demo.Task6.resources
 C:\Users\loktevik\source\repos\Graph_demo\Graph_demo\obj\Debug\Graph_demo.Task7.resources
+C:\Users\LOKTEVS\source\repos\Graph_demo\Graph_demo\obj\Debug\Graph_demo.Task8.resources

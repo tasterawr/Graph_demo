@@ -888,6 +888,57 @@ namespace Graph_demo
             return ans;
         }
 
+        public int FordFulkerson(Vertex v, Vertex t, int cmin, Dictionary<Vertex, bool> visited, int cnt)
+        {
+            if (v == t)
+                return cmin;
+            visited[v] = true;
+            foreach (Vertex ver in adj_list[v])
+            {
+                Edge e = edges.Single(x => x.Begin == v && x.End == ver);
+                if (!visited[ver] && e.Flow < e.Capacity)
+                {
+                    cnt++;
+                    int delta = FordFulkerson(ver, t, cmin < e.Weight - e.Flow ? cmin : e.Weight - e.Flow, new Dictionary<Vertex,bool>(visited), cnt);
+                    if (delta > 0)
+                    {
+                        e.Flow += delta;
+                        //e.Capacity -= delta;
+                        return delta;
+                    }
+                        
+                }   
+            }
+            return 0;
+        }
+
+        public int FindMaxFlow(Vertex v, Vertex t)
+        {
+            if (adj_list[t].Count != 0)
+            {
+                ErrorMessanger.Message = "Вершина " + t.Value + " не может быть стоком.";
+                return -1;
+            }
+            Dictionary<Vertex, bool> visited = new Dictionary<Vertex, bool>();
+            foreach (Vertex ver in vertices)
+            {
+                visited.Add(ver, false);
+                if (adj_list[ver].IndexOf(v) != -1)
+                {
+                    ErrorMessanger.Message = "Вершина " + v.Value + "  не может быть истоком.";
+                    return -1;
+                }
+            }
+            int maxflow = 0;
+            int local_flow = FordFulkerson(v, t, int.MaxValue, visited, 0);
+            while (local_flow != 0)
+            {
+                maxflow += local_flow;
+                local_flow = FordFulkerson(v, t, int.MaxValue, visited, 0);
+            }
+            return maxflow;
+        }
+
         public List<Vertex> Vertices
         {
             get => vertices;

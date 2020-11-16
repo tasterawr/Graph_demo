@@ -11,10 +11,14 @@ namespace Graph_demo
         private Vertex begin = new Vertex();
         private Vertex end = new Vertex();
         private int weight;
+        private int capacity;
+        private int flow;
 
         public Edge()
         {
             this.weight = 1;
+            capacity = weight;
+            this.flow = 0;
         }
 
         public int CompareTo(Edge comparePart)
@@ -32,6 +36,7 @@ namespace Graph_demo
             this.begin = a;
             this.end = b;
             this.weight = 1;
+            capacity = weight;
         }
 
         public Edge(Vertex a, Vertex b, int weight)
@@ -39,6 +44,7 @@ namespace Graph_demo
             this.begin = a;
             this.end = b;
             this.weight = weight;
+            capacity = weight;
         }
         
         public Vertex Begin
@@ -57,6 +63,18 @@ namespace Graph_demo
         {
             get => weight;
             set => weight = value;
+        }
+
+        public int Capacity
+        {
+            get => capacity;
+            set => capacity = value;
+        }
+
+        public int Flow
+        {
+            get => flow;
+            set => flow = value;
         }
     }
 }

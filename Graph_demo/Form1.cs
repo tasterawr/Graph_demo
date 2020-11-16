@@ -544,7 +544,28 @@ namespace Graph_demo
                 s.Append("Не существует.");
 
             MessageBox.Show(s.ToString());
+        }
 
+        public void FindMaxFlow(string a, string b)
+        {
+            Vertex s;
+            Vertex t;
+            try
+            {
+                s = control.Graph_.Vertices.Single(x => x.Value == a);
+                t = control.Graph_.Vertices.Single(x => x.Value == b);
+            }
+            catch
+            {
+                ErrorMessanger.Message = "В графе нет вершины с заданным значением.";
+                ThrowMessage();
+                return;
+            }
+            int result = control.Graph_.FindMaxFlow(s, t);
+            if (result == -1)
+                ThrowMessage();
+            else
+                MessageBox.Show("Максимальный поток = " + result);
         }
         public void ThrowMessage()
         {
