@@ -798,23 +798,15 @@ namespace Graph_demo
                 d[v][v] = 0;
             }
 
-            bool neg_cycle_flag = false;
-
             foreach (Vertex a in vertices)
             {
                 foreach (Vertex b in vertices)
                 {
-                    if (d[a][b] != 100000)
                         foreach (Vertex c in vertices)
                         {
-                            if (d[a][c] > d[a][b] + d[b][c])
+                            if (d[b][a] < 100000 && d[a][c] < 100000)
                             {
-                                d[a][c] = d[a][b] + d[b][c];
-                                p[a][c] = p[a][b];
-                            }
-                            if (d[a][c] < 100000 && d[c][c] < 0 && d[c][b] < 100000)
-                            {
-                                d[a][b] = -100000;
+                                d[b][c] = d[b][c] < d[b][a] + d[a][c] ? d[b][c] : d[b][a] + d[a][c];
                             }
                         }
                 }
@@ -824,10 +816,9 @@ namespace Graph_demo
             {
                 foreach (Vertex b in vertices)
                 {
-                    if (d[a][b] != 100000)
                         foreach (Vertex c in vertices)
                         {
-                            if (d[a][c] < 100000 && d[c][c] < 0 && d[c][b] < 100000)
+                            if (d[a][c] < 100000 && d[c][c] < 0 && d[c][b] < 100000 && a != b)
                             {
                                 d[a][b] = -100000;
                             }
@@ -903,7 +894,6 @@ namespace Graph_demo
                     if (delta > 0)
                     {
                         e.Flow += delta;
-                        //e.Capacity -= delta;
                         return delta;
                     }
                         
