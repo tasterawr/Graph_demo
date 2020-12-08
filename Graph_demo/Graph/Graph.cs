@@ -100,6 +100,7 @@ namespace Graph_demo
                     i++; 
                 }
             }
+            ErrorMessanger.Message = "";
         }
 
         public Graph(Graph previous)
@@ -120,7 +121,9 @@ namespace Graph_demo
             Vertex v = new Vertex();
             try
             {
-                vertices.Single(x => x.Value == val);
+                v = vertices.Single(x => x.Value == val);
+                ErrorMessanger.Message = "Граф уже имеет вершину с заданным значением.";
+                return null;
             }
             catch
             {
@@ -130,12 +133,6 @@ namespace Graph_demo
                 adj_list[v] = new List<Vertex>();
                 return v;
             }
-            if (v == null)
-            {
-                ErrorMessanger.Message = "Граф уже имеет вершину с заданным значением.";
-                return null;
-            }
-            else return null;
         }
 
         public Edge AddEdge(string val1, string val2)
@@ -791,24 +788,45 @@ namespace Graph_demo
                     {
                         pair.Add(v_, 100000);
                     }
-                    p_pair.Add(v_, v_);
+                    p_pair.Add(v_, null);
                 }
                 d.Add(v, pair);
                 p.Add(v, p_pair);
-                d[v][v] = 0;
+                try
+                {
+                    Edge e = edges.Single(x => x.Begin == v && x.End == v);
+                    if (e.Weight < 0)
+                        d[v][v] = e.Weight;
+                    else
+                        d[v][v] = 0;
+                }
+                catch
+                {
+                    d[v][v] = 0;
+                }
             }
 
             foreach (Vertex a in vertices)
             {
                 foreach (Vertex b in vertices)
                 {
-                        foreach (Vertex c in vertices)
+                    foreach (Vertex c in vertices)
+                    {
+                        if (d[b][a] < 100000 && d[a][c] < 100000)
                         {
-                            if (d[b][a] < 100000 && d[a][c] < 100000)
+                            if (d[b][c] > d[b][a] + d[a][c])
                             {
-                                d[b][c] = d[b][c] < d[b][a] + d[a][c] ? d[b][c] : d[b][a] + d[a][c];
+                                d[b][c] = d[b][a] + d[a][c];
+                                p[b][c] = a;
                             }
+                            else
+                            {
+                                continue;
+                            }
+                            
                         }
+                    }
+
                 }
             }
 
@@ -840,16 +858,19 @@ namespace Graph_demo
             else if (d[v1][to] == 100000)
             {
                 path1 = null;
+                ans.Add(new KeyValuePair<List<Vertex>, int>(path1, 100000));
             }
             else
             {
-                Vertex ver = v1;
-                while (ver != to)
+                Vertex ver = p[v1][to];
+                path1.Add(to);
+                while (ver != null)
                 {
                     path1.Add(ver);
-                    ver = p[ver][to];
+                    ver = p[v1][ver];
                 }
-                path1.Add(to);
+                path1.Add(v1);
+                path1.Reverse();
                 ans.Add(new KeyValuePair<List<Vertex>, int>(path1, d[v1][to]));
             }
 
@@ -863,53 +884,71 @@ namespace Graph_demo
             else if (d[v2][to] == 100000)
             {
                 path2 = null;
+                ans.Add(new KeyValuePair<List<Vertex>, int>(path2, 100000));
             }
             else
             {
-                Vertex ver = v2;
-                while (ver != to)
+                Vertex ver = p[v2][to];
+                path2.Add(to);
+                while (ver != null)
                 {
                     path2.Add(ver);
-                    ver = p[ver][to];
+                    ver = p[v2][ver];
                 }
-                path2.Add(to);
+                path2.Add(v2);
+                path2.Reverse();
                 ans.Add(new KeyValuePair<List<Vertex>, int>(path2, d[v2][to]));
             }
 
             return ans;
         }
 
-        public int FordFulkerson(Vertex v, Vertex t, int cmin, Dictionary<Vertex, bool> visited, int cnt)
+        public int FordFulkerson(Vertex v, Vertex t, int cmin, Dictionary<Vertex, bool> visited, Dictionary<Vertex,List<Vertex>> full_adj_list)
         {
             if (v == t)
                 return cmin;
             visited[v] = true;
-            foreach (Vertex ver in adj_list[v])
+            foreach (Vertex ver in full_adj_list[v])
             {
-                Edge e = edges.Single(x => x.Begin == v && x.End == ver);
-                if (!visited[ver] && e.Flow < e.Capacity)
+                bool backwards = false;
+                Edge e = edges.Single(x => (x.Begin == v && x.End == ver) || (x.End == v && x.Begin == ver));
+                if (ver == e.End)
+                    backwards = false;
+                else if (ver == e.Begin)
+                    backwards = true;
+                if ((!visited[ver] && backwards == false && e.Flow < e.Capacity) || (!visited[ver] && backwards == true && e.Flow > 0 && e.Flow < e.Capacity))
                 {
-                    cnt++;
-                    int delta = FordFulkerson(ver, t, cmin < e.Weight - e.Flow ? cmin : e.Weight - e.Flow, new Dictionary<Vertex,bool>(visited), cnt);
+                    int delta = FordFulkerson(ver, t, cmin < e.Capacity - e.Flow ? cmin : e.Capacity - e.Flow, new Dictionary<Vertex,bool>(visited), full_adj_list);
                     if (delta > 0)
                     {
-                        e.Flow += delta;
+                        if (!backwards)
+                            e.Flow += delta;
+                        else
+                            e.Flow -= delta;
                         return delta;
                     }
-                        
                 }   
+                else if (!visited[ver] && backwards == true && e.Flow > 0 && e.Flow == e.Capacity)
+                {
+                    int delta = FordFulkerson(ver, t, cmin < e.Flow ? cmin : e.Flow, new Dictionary<Vertex, bool>(visited), full_adj_list);
+                    if (delta > 0)
+                    {
+                        e.Flow -= delta;
+                        return delta;
+                    }
+                }
             }
             return 0;
         }
 
         public int FindMaxFlow(Vertex v, Vertex t)
         {
+            Dictionary<Vertex, bool> visited = new Dictionary<Vertex, bool>();
             if (adj_list[t].Count != 0)
             {
                 ErrorMessanger.Message = "Вершина " + t.Value + " не может быть стоком.";
                 return -1;
             }
-            Dictionary<Vertex, bool> visited = new Dictionary<Vertex, bool>();
             foreach (Vertex ver in vertices)
             {
                 visited.Add(ver, false);
@@ -919,14 +958,125 @@ namespace Graph_demo
                     return -1;
                 }
             }
+
+            Dictionary<Vertex, List<Vertex>> full_adj_list = new Dictionary<Vertex, List<Vertex>>();
+            foreach (KeyValuePair<Vertex,List<Vertex>> pair in adj_list){
+                full_adj_list.Add(pair.Key, new List<Vertex>(pair.Value));
+            }
+            foreach (Vertex ver in vertices)
+            {
+                if (ver != v && ver != t)
+                    foreach (Vertex ver_ in vertices)
+                    {
+                        if (ver != ver_ && adj_list[ver_].IndexOf(ver) != -1 && ver_ != t)
+                            full_adj_list[ver].Add(ver_);
+                    }
+            }
             int maxflow = 0;
-            int local_flow = FordFulkerson(v, t, int.MaxValue, visited, 0);
+            int local_flow = FordFulkerson(v, t, int.MaxValue, visited, full_adj_list);
             while (local_flow != 0)
             {
                 maxflow += local_flow;
-                local_flow = FordFulkerson(v, t, int.MaxValue, visited, 0);
+                local_flow = FordFulkerson(v, t, int.MaxValue, visited, full_adj_list);
             }
+
+            foreach (Edge e in edges)
+                e.Flow = 0;
             return maxflow;
+        }
+
+        public Graph VisualKruskal(VisualForm form)
+        {
+            if (weighted == false)
+            {
+                ErrorMessanger.Message = "Граф не взвешенный.";
+                return null;
+            }
+
+            Graph g = new Graph(this);
+            g.edges.Sort();
+            string s = "Производим сортировку ребер по весам:\n";
+            foreach(Edge e in g.edges)
+            {
+                s += e.Weight.ToString() + " ";
+            }
+            form.SetMessage(s);
+            while (!form.nextstep)
+            {
+                continue;
+            }
+            s ="Каждую вершину кладем в отдельную компоненту связности.";
+            form.SetMessage(s);
+            form.SetKruskalState(null);
+            while (!form.nextstep)
+            {
+                continue;
+            }
+            List<Edge> new_edges = new List<Edge>();
+            List<List<Vertex>> con_comp = new List<List<Vertex>>();
+            foreach (Vertex v in g.vertices)
+            {
+                List<Vertex> l = new List<Vertex>();
+                l.Add(v);
+                con_comp.Add(l);
+            }
+
+            foreach (Edge e in g.edges)
+            {
+                List<Vertex> comp1 = con_comp.Single(x => x.IndexOf(e.Begin) != -1);
+                List<Vertex> comp2 = con_comp.Single(x => x.IndexOf(e.End) != -1);
+                if (comp1 != comp2)
+                {
+                    new_edges.Add(e);
+                    form.SetSelectedEdge(e);
+                    form.SetMessage("Дуга с весом " + e.Weight + " соединяет разные компоненты связности. Добавляем.");
+                    List<Vertex> comp = comp1.Concat(comp2).ToList();
+                    con_comp.Add(comp);
+                    con_comp.Remove(comp1);
+                    con_comp.Remove(comp2);
+                    while (!form.nextstep)
+                    {
+                        continue;
+                    }
+                    form.SetKruskalState(e);
+                }
+                else
+                {
+                    form.SetSelectedEdge(e);
+                    form.SetMessage("Дуга с весом " + e.Weight + " не соединяет разные компоненты связности. Пропускаем.");
+                    while (!form.nextstep)
+                    {
+                        continue;
+                    }
+                    form.SetKruskalState(null);
+                }
+            }
+
+            List<Edge> tmp = new List<Edge>(g.edges);
+            foreach (Edge e in tmp)
+            {
+                if (new_edges.FindIndex(x => x.Begin.Value == e.Begin.Value &&
+                x.End.Value == e.End.Value) == -1)
+                    g.DeleteEdge(e.Begin.Value, e.End.Value);
+            }
+            form.SetMessage("Работа алгоритма завершена.");
+            while (!form.nextstep)
+            {
+                continue;
+            }
+            form.TurnOffFunction();
+            return g;
+        }
+
+        public void DoShit(VisualForm form)
+        {
+            form.SetMessage("Первый шаг");
+            while (!form.nextstep)
+            {
+                continue;
+            }
+            form.SetMessage("Второй шаг");
+            form.TurnOffFunction();
         }
 
         public List<Vertex> Vertices

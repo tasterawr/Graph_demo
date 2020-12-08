@@ -36,6 +36,7 @@ namespace Graph_demo
             this.begin = a;
             this.end = b;
             this.weight = 1;
+            flow = 0;
             capacity = weight;
         }
 
@@ -44,6 +45,7 @@ namespace Graph_demo
             this.begin = a;
             this.end = b;
             this.weight = weight;
+            flow = 0;
             capacity = weight;
         }
         

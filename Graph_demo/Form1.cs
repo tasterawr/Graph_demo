@@ -14,6 +14,7 @@ namespace Graph_demo
     {
         public Controller control = new Controller();
         public Dictionary<string,Graph> dict = new Dictionary<string, Graph>();
+        public VisualForm visualizer;
         public Form1()
         {
             InitializeComponent();
@@ -218,16 +219,20 @@ namespace Graph_demo
 
         public void AddVertex(string value)
         {
-            control.Graph_.AddVertex(value);
+            Vertex v = control.Graph_.AddVertex(value);
             ThrowMessage();
+            if (visualizer != null)
+                visualizer.AddVertexToList(v);
             RefreshVertices();
             RefreshAdjList();
         }
 
         public void AddEdge(string val1, string val2)
         {
-            control.Graph_.AddEdge(val1, val2);
+            Edge e = control.Graph_.AddEdge(val1, val2);
             ThrowMessage();
+            if (visualizer != null)
+                visualizer.AddEdgeToList(e);
             RefreshEdges();
             RefreshVertices();
             RefreshAdjList();
@@ -235,8 +240,10 @@ namespace Graph_demo
 
         public void AddEdge(string val1, string val2, int weight)
         {
-            control.Graph_.AddEdge(val1, val2, weight);
+            Edge e =control.Graph_.AddEdge(val1, val2, weight);
             ThrowMessage();
+            if (visualizer != null)
+                visualizer.AddEdgeToList(e);
             RefreshEdges();
             RefreshVertices();
             RefreshAdjList();
@@ -403,13 +410,29 @@ namespace Graph_demo
                 ThrowMessage();
             }
             Graph g = control.Graph_.Kruskal();
-            dict.Add("sp. tree", g);
+            dict.Add(RandGenerator.GenerateWord(), g);
             control.Graph_ = g;
             RefreshVertices();
             RefreshGraphs();
             RefreshEdges();
             RefreshAdjList();
             MessageBox.Show("Минимальное остовное дерево построено.");
+        }
+
+        public void VisualKruskal(VisualForm visualiser)
+        {
+            if (control.Graph_.Orient)
+            {
+                ErrorMessanger.Message = "Граф не должен быть ориентированным.";
+                ThrowMessage();
+                visualiser.TurnOffFunction();
+                return;
+            }
+            Graph g = control.Graph_.VisualKruskal(visualiser);
+            Invoke((MethodInvoker)delegate {
+                dict.Add(RandGenerator.GenerateWord(), g);
+                RefreshGraphs();
+            });
         }
 
         public void GetRadius()
@@ -525,7 +548,7 @@ namespace Graph_demo
             else
                 s.Append("Не существует.\n");
             s.Append("Из " + v2 + " в " + to + ": ");
-            if (pair.Count > 1)
+            if (pair[1].Key != null)
             {
                 if (pair[1].Value == -100000)
                 {

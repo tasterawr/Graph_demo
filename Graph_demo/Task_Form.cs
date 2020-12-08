@@ -28,6 +28,7 @@ namespace Graph_demo
             task_cb.Items.Add("Задание Форд-Беллман I");
             task_cb.Items.Add("Задание Флойд-Уоршелл II");
             task_cb.Items.Add("Задание Поток");
+            task_cb.Items.Add("Визуализатор");
             task_cb.Text = "Задание 1 (la 1)";
         }
 
@@ -152,6 +153,15 @@ namespace Graph_demo
                 }
                 Task8 form = new Task8(parent);
                 form.Show();
+                this.Close();
+                return;
+            }
+            else if (task_cb.SelectedItem.ToString() == "Визуализатор")
+            {
+                VisualForm form = new VisualForm(parent);
+                form.Show();
+                form.PaintField();
+                form.CheckIfGraphExists();
                 this.Close();
                 return;
             }
